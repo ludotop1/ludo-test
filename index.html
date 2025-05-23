@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ludo Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ludo-board">
+            <div class="cell" id="cell-0"></div>
+            <div class="cell" id="cell-1"></div>
+            <div class="cell" id="cell-2"></div>
+            <div class="cell" id="cell-3"></div>
+            <div class="cell" id="cell-4"></div>
+            <div class="cell" id="cell-5"></div>
+            <div class="cell" id="cell-6"></div>
+            <div class="cell" id="cell-7"></div>
+            <div class="cell" id="cell-8"></div>
+            <div class="cell" id="cell-9"></div>
+            <div class="cell" id="cell-10"></div>
+            <div class="cell" id="cell-11"></div>
+            <div class="cell" id="cell-12"></div>
+            <div class="cell" id="cell-13"></div>
+            <div class="cell" id="cell-14"></div>
+            <div class="cell" id="cell-15"></div>
+            <div class="cell" id="cell-16"></div>
+            <div class="cell" id="cell-17"></div>
+            <div class="cell" id="cell-18"></div>
+            <div class="cell" id="cell-19"></div>
+            <div class="cell" id="cell-20"></div>
+            <div class="cell" id="cell-21"></div>
+            <div class="cell" id="cell-22"></div>
+            <div class="cell" id="cell-23"></div>
+            <div class="cell" id="cell-24"></div>
+            <div class="cell" id="cell-25"></div>
+            <div class="cell" id="cell-26"></div>
+            <div class="cell" id="cell-27"></div>
+            <div class="cell" id="cell-28"></div>
+            <div class="cell" id="cell-29"></div>
+            <div class="cell" id="cell-30"></div>
+            <div class="cell" id="cell-31"></div>
+            <div class="cell" id="cell-32"><div class="token red-token" id="red-1">1</div></div>
+            <div class="cell" id="cell-33"><div class="token red-token" id="red-2">2</div></div>
+            <div class="cell" id="cell-34"></div>
+            <div class="cell" id="cell-35"></div>
+            <div class="cell" id="cell-36"></div>
+            <div class="cell" id="cell-37"></div>
+            <div class="cell" id="cell-38"></div>
+            <div class="cell" id="cell-39"></div>
+            <div class="cell" id="cell-40"></div>
+            <div class="cell" id="cell-41"><div class="token green-token" id="green-1">1</div></div>
+            <div class="cell" id="cell-42"><div class="token green-token" id="green-2">2</div></div>
+            <div class="cell" id="cell-43"></div>
+            <div class="cell" id="cell-44"></div>
+            <div class="cell" id="cell-45"></div>
+            <div class="cell" id="cell-46"></div>
+            <div class="cell" id="cell-47"><div class="token red-token" id="red-3">3</div></div>
+            <div class="cell" id="cell-48"><div class="token red-token" id="red-4">4</div></div>
+            <div class="cell" id="cell-49"></div>
+            <div class="cell" id="cell-50"></div>
+            <div class="cell" id="cell-51"></div>
+            <div class="cell" id="cell-52"></div>
+            <div class="cell" id="cell-53"></div>
+            <div class="cell" id="cell-54"></div>
+            <div class="cell" id="cell-55"></div>
+            <div class="cell" id="cell-56"><div class="token green-token" id="green-3">3</div></div>
+            <div class="cell" id="cell-57"><div class="token green-token" id="green-4">4</div></div>
+            <div class="cell" id="cell-58"></div>
+            <div class="cell" id="cell-59"></div>
+            <div class="cell" id="cell-60"></div>
+            <div class="cell" id="cell-61"></div>
+            <div class="cell" id="cell-62"></div>
+            <div class="cell" id="cell-63"></div>
+            <div class="cell" id="cell-64"></div>
+            <div class="cell" id="cell-65"></div>
+            <div class="cell" id="cell-66"></div>
+            <div class="cell" id="cell-67"></div>
+            <div class="cell" id="cell-68"></div>
+            <div class="cell" id="cell-69"></div>
+            <div class="cell" id="cell-70"></div>
+            <div class="cell" id="cell-71"></div>
+            <div class="cell" id="cell-72"></div>
+            <div class="cell" id="cell-73"></div>
+            <div class="cell" id="cell-74"></div>
+            <div class="cell" id="cell-75"></div>
+            <div class="cell" id="cell-76"></div>
+            <div class="cell" id="cell-77"></div>
+            <div class="cell" id="cell-78"></div>
+            <div class="cell" id="cell-79"></div>
+            <div class="cell" id="cell-80"></div>
+            <div class="cell" id="cell-81"></div>
+            <div class="cell" id="cell-82"></div>
+            <div class="cell" id="cell-83"></div>
+            <div class="cell" id="cell-84"></div>
+            <div class="cell" id="cell-85"></div>
+            <div class="cell" id="cell-86"></div>
+            <div class="cell" id="cell-87"></div>
+            <div class="cell" id="cell-88"></div>
+            <div class="cell" id="cell-89"></div>
+            <div class="cell" id="cell-90"></div>
+            <div class="cell" id="cell-91"></div>
+            <div class="cell" id="cell-92"></div>
+            <div class="cell" id="cell-93"></div>
+            <div class="cell" id="cell-94"></div>
+            <div class="cell" id="cell-95"></div>
+            <div class="cell" id="cell-96"></div>
+            <div class="cell" id="cell-97"></div>
+            <div class="cell" id="cell-98"></div>
+            <div class="cell" id="cell-99"></div>
+            <div class="cell" id="cell-100"></div>
+            <div class="cell" id="cell-101"></div>
+            <div class="cell" id="cell-102"></div>
+            <div class="cell" id="cell-103"></div>
+            <div class="cell" id="cell-104"></div>
+            <div class="cell" id="cell-105"></div>
+            <div class="cell" id="cell-106"></div>
+            <div class="cell" id="cell-107"></div>
+            <div class="cell" id="cell-108"></div>
+            <div class="cell" id="cell-109"></div>
+            <div class="cell" id="cell-110"></div>
+            <div class="cell" id="cell-111"></div>
+            <div class="cell" id="cell-112"></div>
+            <div class="cell" id="cell-113"></div>
+            <div class="cell" id="cell-114"></div>
+            <div class="cell" id="cell-115"></div>
+            <div class="cell" id="cell-116"></div>
+            <div class="cell" id="cell-117"></div>
+            <div class="cell" id="cell-118"></div>
+            <div class="cell" id="cell-119"></div>
+            <div class="cell" id="cell-120"></div>
+            <div class="cell" id="cell-121"></div>
+            <div class="cell" id="cell-122"></div>
+            <div class="cell" id="cell-123"></div>
+            <div class="cell" id="cell-124"></div>
+            <div class="cell" id="cell-125"></div>
+            <div class="cell" id="cell-126"></div>
+            <div class="cell" id="cell-127"></div>
+            <div class="cell" id="cell-128"></div>
+            <div class="cell" id="cell-129"></div>
+            <div class="cell" id="cell-130"></div>
+            <div class="cell" id="cell-131"></div>
+            <div class="cell" id="cell-132"></div>
+            <div class="cell" id="cell-133"></div>
+            <div class="cell" id="cell-134"></div>
+            <div class="cell" id="cell-135"></div>
+            <div class="cell" id="cell-136"></div>
+            <div class="cell" id="cell-137"></div>
+            <div class="cell" id="cell-138"></div>
+            <div class="cell" id="cell-139"></div>
+            <div class="cell" id="cell-140"></div>
+            <div class="cell" id="cell-141"></div>
+            <div class="cell" id="cell-142"></div>
+            <div class="cell" id="cell-143"></div>
+            <div class="cell" id="cell-144"></div>
+            <div class="cell" id="cell-145"></div>
+            <div class="cell" id="cell-146"></div>
+            <div class="cell" id="cell-147"></div>
+            <div class="cell" id="cell-148"></div>
+            <div class="cell" id="cell-149"></div>
+            <div class="cell" id="cell-150"></div>
+            <div class="cell" id="cell-151"></div>
+            <div class="cell" id="cell-152"></div>
+            <div class="cell" id="cell-153"></div>
+            <div class="cell" id="cell-154"></div>
+            <div class="cell" id="cell-155"></div>
+            <div class="cell" id="cell-156"></div>
+            <div class="cell" id="cell-157"></div>
+            <div class="cell" id="cell-158"></div>
+            <div class="cell" id="cell-159"></div>
+            <div class="cell" id="cell-160"></div>
+            <div class="cell" id="cell-161"></div>
+            <div class="cell" id="cell-162"></div>
+            <div class="cell" id="cell-163"></div>
+            <div class="cell" id="cell-164"></div>
+            <div class="cell" id="cell-165"></div>
+            <div class="cell" id="cell-166"></div>
+            <div class="cell" id="cell-167"><div class="token blue-token" id="blue-1">1</div></div>
+            <div class="cell" id="cell-168"><div class="token blue-token" id="blue-2">2</div></div>
+            <div class="cell" id="cell-169"></div>
+            <div class="cell" id="cell-170"></div>
+            <div class="cell" id="cell-171"></div>
+            <div class="cell" id="cell-172"></div>
+            <div class="cell" id="cell-173"></div>
+            <div class="cell" id="cell-174"></div>
+            <div class="cell" id="cell-175"></div>
+            <div class="cell" id="cell-176"><div class="token yellow-token" id="yellow-1">1</div></div>
+            <div class="cell" id="cell-177"><div class="token yellow-token" id="yellow-2">2</div></div>
+            <div class="cell" id="cell-178"></div>
+            <div class="cell" id="cell-179"></div>
+            <div class="cell" id="cell-180"></div>
+            <div class="cell" id="cell-181"></div>
+            <div class="cell" id="cell-182"><div class="token blue-token" id="blue-3">3</div></div>
+            <div class="cell" id="cell-183"><div class="token blue-token" id="blue-4">4</div></div>
+            <div class="cell" id="cell-184"></div>
+            <div class="cell" id="cell-185"></div>
+            <div class="cell" id="cell-186"></div>
+            <div class="cell" id="cell-187"></div>
+            <div class="cell" id="cell-188"></div>
+            <div class="cell" id="cell-189"></div>
+            <div class="cell" id="cell-190"></div>
+            <div class="cell" id="cell-191"><div class="token yellow-token" id="yellow-3">3</div></div>
+            <div class="cell" id="cell-192"><div class="token yellow-token" id="yellow-4">4</div></div>
+            <div class="cell" id="cell-193"></div>
+            <div class="cell" id="cell-194"></div>
+            <div class="cell" id="cell-195"></div>
+            <div class="cell" id="cell-196"></div>
+            <div class="cell" id="cell-197"></div>
+            <div class="cell" id="cell-198"></div>
+            <div class="cell" id="cell-199"></div>
+            <div class="cell" id="cell-200"></div>
+            <div class="cell" id="cell-201"></div>
+            <div class="cell" id="cell-202"></div>
+            <div class="cell" id="cell-203"></div>
+            <div class="cell" id="cell-204"></div>
+            <div class="cell" id="cell-205"></div>
+            <div class="cell" id="cell-206"></div>
+            <div class="cell" id="cell-207"></div>
+            <div class="cell" id="cell-208"></div>
+            <div class="cell" id="cell-209"></div>
+            <div class="cell" id="cell-210"></div>
+            <div class="cell" id="cell-211"></div>
+            <div class="cell" id="cell-212"></div>
+            <div class="cell" id="cell-213"></div>
+            <div class="cell" id="cell-214"></div>
+            <div class="cell" id="cell-215"></div>
+            <div class="cell" id="cell-216"></div>
+            <div class="cell" id="cell-217"></div>
+            <div class="cell" id="cell-218"></div>
+            <div class="cell" id="cell-219"></div>
+            <div class="cell" id="cell-220"></div>
+            <div class="cell" id="cell-221"></div>
+            <div class="cell" id="cell-222"></div>
+            <div class="cell" id="cell-223"></div>
+            <div class="cell" id="cell-224"></div>
+        </div>
+        <div id="ui-panel">
+            <div id="player-turn-indicator">Turn: Player 1 (Red)</div>
+            <div id="dice-display" class="dice">0</div>
+            <button id="roll-dice-btn">Roll Dice</button>
+            <div id="game-message"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

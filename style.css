@@ -1,0 +1,271 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+#game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#ludo-board {
+    display: grid;
+    grid-template-columns: repeat(15, 30px); /* 15 columns, each 30px wide */
+    grid-template-rows: repeat(15, 30px);    /* 15 rows, each 30px high */
+    border: 2px solid #333;
+    width: 450px; /* 15 * 30px */
+    height: 450px; /* 15 * 30px */
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ccc;
+    box-sizing: border-box; /* Ensures border doesn't add to size */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+    position: relative; /* Added to make it a positioning context for absolute children */
+}
+
+.token {
+    width: 20px; /* Slightly smaller than cell */
+    height: 20px; /* Slightly smaller than cell */
+    border-radius: 50%; /* Circular tokens */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    position: absolute; /* To allow multiple tokens in one cell later if needed, and fine-tune position */
+    /* Parent .cell needs to be position: relative or similar if tokens are absolute and need to stack. */
+    /* For now, since each token is in its own cell, this might not be strictly needed but good for future. */
+}
+
+.red-token {
+    background-color: darkred;
+    border: 1px solid #ff0000;
+}
+
+.green-token {
+    background-color: darkgreen;
+    border: 1px solid #00ff00;
+}
+
+.yellow-token {
+    background-color: #cca300; /* Darker yellow */
+    border: 1px solid #ffff00;
+    color: black; /* Text color for yellow */
+}
+
+.blue-token {
+    background-color: darkblue;
+    border: 1px solid #0000ff;
+}
+
+.token.clickable {
+    cursor: pointer;
+    opacity: 0.8; /* Indicate it's interactive */
+    box-shadow: 0 0 5px 2px gold; /* Highlight clickable tokens */
+}
+
+/* Placeholder colors for home bases - these will need specific cell IDs */
+/* Red Home Base (Top-Left Quadrant) */
+/* Example: #cell-0 to #cell-5, #cell-15 to #cell-20, etc. for a 6x6 area */
+/* For now, let's just color a block to represent a home area */
+/* This will be refined based on actual cell IDs later */
+
+/* Red Home Area (Top Left 6x6) */
+/* Cells from (0,0) to (5,5) */
+#cell-0, #cell-1, #cell-2, #cell-3, #cell-4, #cell-5,
+#cell-15, #cell-16, #cell-17, #cell-18, #cell-19, #cell-20,
+#cell-30, #cell-31, #cell-32, #cell-33, #cell-34, #cell-35,
+#cell-45, #cell-46, #cell-47, #cell-48, #cell-49, #cell-50,
+#cell-60, #cell-61, #cell-62, #cell-63, #cell-64, #cell-65,
+#cell-75, #cell-76, #cell-77, #cell-78, #cell-79, #cell-80 {
+    background-color: rgba(255, 0, 0, 0.3); /* Light Red */
+}
+/* Inner 4x4 actual home base */
+#cell-16, #cell-17, #cell-18, #cell-19,
+#cell-31, #cell-32, #cell-33, #cell-34,
+#cell-46, #cell-47, #cell-48, #cell-49,
+#cell-61, #cell-62, #cell-63, #cell-64 {
+    background-color: red;
+}
+
+
+/* Green Home Area (Top Right 6x6) */
+/* Cells from (0,9) to (5,14) */
+#cell-9, #cell-10, #cell-11, #cell-12, #cell-13, #cell-14,
+#cell-24, #cell-25, #cell-26, #cell-27, #cell-28, #cell-29,
+#cell-39, #cell-40, #cell-41, #cell-42, #cell-43, #cell-44,
+#cell-54, #cell-55, #cell-56, #cell-57, #cell-58, #cell-59,
+#cell-69, #cell-70, #cell-71, #cell-72, #cell-73, #cell-74,
+#cell-84, #cell-85, #cell-86, #cell-87, #cell-88, #cell-89 {
+    background-color: rgba(0, 255, 0, 0.3); /* Light Green */
+}
+/* Inner 4x4 actual home base */
+#cell-25, #cell-26, #cell-27, #cell-28,
+#cell-40, #cell-41, #cell-42, #cell-43,
+#cell-55, #cell-56, #cell-57, #cell-58,
+#cell-70, #cell-71, #cell-72, #cell-73 {
+    background-color: green;
+}
+
+/* Yellow Home Area (Bottom Right 6x6) */
+/* Cells from (9,9) to (14,14) */
+#cell-144, #cell-145, #cell-146, #cell-147, #cell-148, #cell-149,
+#cell-159, #cell-160, #cell-161, #cell-162, #cell-163, #cell-164,
+#cell-174, #cell-175, #cell-176, #cell-177, #cell-178, #cell-179,
+#cell-189, #cell-190, #cell-191, #cell-192, #cell-193, #cell-194,
+#cell-204, #cell-205, #cell-206, #cell-207, #cell-208, #cell-209,
+#cell-219, #cell-220, #cell-221, #cell-222, #cell-223, #cell-224 {
+    background-color: rgba(255, 255, 0, 0.3); /* Light Yellow */
+}
+/* Inner 4x4 actual home base */
+#cell-160, #cell-161, #cell-162, #cell-163,
+#cell-175, #cell-176, #cell-177, #cell-178,
+#cell-190, #cell-191, #cell-192, #cell-193,
+#cell-205, #cell-206, #cell-207, #cell-208 {
+    background-color: yellow;
+}
+
+/* Blue Home Area (Bottom Left 6x6) */
+/* Cells from (9,0) to (14,5) */
+#cell-135, #cell-136, #cell-137, #cell-138, #cell-139, #cell-140,
+#cell-150, #cell-151, #cell-152, #cell-153, #cell-154, #cell-155,
+#cell-165, #cell-166, #cell-167, #cell-168, #cell-169, #cell-170,
+#cell-180, #cell-181, #cell-182, #cell-183, #cell-184, #cell-185,
+#cell-195, #cell-196, #cell-197, #cell-198, #cell-199, #cell-200,
+#cell-210, #cell-211, #cell-212, #cell-213, #cell-214, #cell-215 {
+    background-color: rgba(0, 0, 255, 0.3); /* Light Blue */
+}
+/* Inner 4x4 actual home base */
+#cell-151, #cell-152, #cell-153, #cell-154,
+#cell-166, #cell-167, #cell-168, #cell-169,
+#cell-181, #cell-182, #cell-183, #cell-184,
+#cell-196, #cell-197, #cell-198, #cell-199 {
+    background-color: blue;
+}
+
+/* Center Area (3x3 from (6,6) to (8,8)) - Path to victory */
+#cell-96, #cell-97, #cell-98,
+#cell-111, #cell-112, #cell-113,
+#cell-126, #cell-127, #cell-128 {
+    background-color: #cccccc; /* Light grey for center block */
+}
+/* Actual victory cell (center of the 3x3 block) */
+#cell-112 {
+    background-color: gold; /* Central Star/Victory Cell */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="18px" height="18px"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+/* Path Cells - These are specific cells forming the track */
+/* These will need to be meticulously mapped out. */
+/* Example for Red's entry and part of its path */
+/* Red entry: cell-81 (row 6, col 1) */
+#cell-81 { background-color: #ffcccb; /* Light red path */ }
+/* Path example: */
+#cell-82, #cell-83, #cell-84, #cell-85, #cell-86 { background-color: #d3d3d3; } /* common path */
+#cell-68 { background-color: #d3d3d3; } /* common path */
+#cell-53 { background-color: #d3d3d3; } /* common path */
+#cell-38 { background-color: #d3d3d3; } /* common path */
+#cell-23 { background-color: #d3d3d3; } /* common path */
+#cell-8 { background-color: #d3d3d3; /* common path - Star cell */ }
+ #cell-8, #cell-21, #cell-36, #cell-51, #cell-92, #cell-133, #cell-148, #cell-163, #cell-178, #cell-193, #cell-208, #cell-218 {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" width="12px" height="12px"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+/* Red Home Stretch */
+#cell-91, #cell-106, #cell-121, #cell-136, #cell-151, #cell-166 { background-color: #ff9999; }
+/* Green Home Stretch */
+#cell-29, #cell-44, #cell-59, #cell-74, #cell-89, #cell-104 { background-color: #90ee90; }
+ /* Yellow Home Stretch */
+#cell-133, #cell-118, #cell-103, #cell-88, #cell-73, #cell-58 { background-color: #ffffe0; }
+/* Blue Home Stretch */
+#cell-215, #cell-200, #cell-185, #cell-170, #cell-155, #cell-140 { background-color: #add8e6; }
+
+
+/* Specific Entry cells for each player */
+#cell-19  { background-color: red; } /* Red Entry - This is one of the cells in the red home base, used for placing tokens */
+#cell-81  { background-color: #ffcccb; border: 2px solid red; } /* Actual Red Entry on path */
+
+#cell-10  { background-color: green; } /* Green Entry (in home base) */
+#cell-21  { background-color: #90ee90; border: 2px solid green; } /* Actual Green Entry on path */
+
+#cell-205 { background-color: yellow; } /* Yellow Entry (in home base) */
+#cell-143 { background-color: #ffff99; border: 2px solid yellow;} /* Actual Yellow Entry on path */
+
+#cell-214 { background-color: blue; } /* Blue Entry (in home base) */
+#cell-203 { background-color: #add8e6; border: 2px solid blue; } /* Actual Blue Entry on path */
+
+#ui-panel {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.dice { /* Changed from #dice-display to class for potential multiple dice or better styling */
+    width: 50px;
+    height: 50px;
+    border: 2px solid #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: white;
+    border-radius: 6px;
+    transition: transform 0.2s ease-out; /* For dice roll animation */
+}
+
+#roll-dice-btn {
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+#roll-dice-btn:hover {
+    background-color: #45a049;
+}
+#roll-dice-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+#player-turn-indicator {
+    font-size: 18px;
+    font-weight: bold;
+    padding: 5px;
+    border-radius: 4px;
+    background-color: #e7e7e7;
+    color: #333;
+}
+
+#game-message {
+    font-size: 14px;
+    color: green;
+    min-height: 20px; /* Reserve space */
+    font-style: italic;
+}
