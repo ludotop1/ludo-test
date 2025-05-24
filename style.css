@@ -269,3 +269,59 @@ body {
     min-height: 20px; /* Reserve space */
     font-style: italic;
 }
+
+#room-management-panel {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+#room-management-panel div {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+#room-management-panel input[type="text"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#room-management-panel button {
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #e0e0e0;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+}
+
+#room-management-panel button:hover {
+    background-color: #d0d0d0;
+}
+
+#current-room-id-display {
+    font-weight: bold;
+    color: #333;
+}
+
+#player-list-display-container {
+    width: 100%;
+    text-align: center; /* Center heading */
+}
+
+#player-list-display div { /* Individual player entries */
+    padding: 5px;
+    border-bottom: 1px dashed #eee;
+    flex-direction: column; /* Stack player name/color if needed */
+    align-items: flex-start; /* Align text to left */
+}
+#player-list-display div:last-child {
+    border-bottom: none;
+}

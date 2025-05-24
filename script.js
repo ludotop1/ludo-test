@@ -2,10 +2,14 @@
 const diceDisplay = document.getElementById('dice-display');
 const rollDiceBtn = document.getElementById('roll-dice-btn');
 const gameMessage = document.getElementById('game-message');
-const playerTurnIndicator = document.getElementById('player-turn-indicator'); // Added for completeness
+const playerTurnIndicator = document.getElementById('player-turn-indicator'); 
+
+let currentRoomIdDisplay, roomIdInput, joinRoomBtn, createRoomBtn, playerListDisplay;
+const MIN_PLAYERS_TO_START = 2; // Define globally for access in event handlers
 
 let currentDiceRoll = 0;
 let rolledSix = false;
+let isGameOver = false; // Tracks if the game has ended
 
 // Player and Turn Management
 const playerColors = ['RED', 'GREEN', 'YELLOW', 'BLUE']; // All possible player colors
@@ -140,6 +144,26 @@ initializePaths();
 console.log("LUDO_PATHS fully initialized:", LUDO_PATHS);
 // Any other functions or event listeners that depend on LUDO_PATHS should come after this initialization.
 
+function getPlayerTokens(playerId) {
+    // Helper function to get all token IDs for a given player
+    const tokens = [];
+    for (let i = 1; i <= 4; i++) {
+        tokens.push(`${playerId.toLowerCase()}-${i}`);
+    }
+    return tokens;
+}
+
+function checkWinCondition(playerId) {
+    const playerTokens = getPlayerTokens(playerId);
+    const victoryCell = LUDO_PATHS[playerId].completePath[56]; // Last cell of the path (0-indexed, 57 cells total)
+
+    for (const tokenId of playerTokens) {
+        if (tokenPositions[tokenId] !== victoryCell) {
+            return false; // At least one token is not on the victory cell
+        }
+    }
+    return true; // All 4 tokens are on the victory cell
+}
 
 // Entry cells are typically safe. Other safe cells will be added later.
 // Defined based on LUDO_PATHS entry cells and 4 other common star cells from the CSS.
@@ -179,6 +203,8 @@ function updatePlayerTurnIndicator() {
 
 
 rollDiceBtn.addEventListener('click', () => {
+    if (isGameOver) return; // Prevent action if game is over
+
     currentDiceRoll = Math.floor(Math.random() * 6) + 1;
     
     if (diceDisplay) {
@@ -209,10 +235,34 @@ rollDiceBtn.addEventListener('click', () => {
     // Example: const diceSound = new Audio('sounds/dice_roll.mp3'); diceSound.play();
 
     console.log(`Player ${currentPlayerId} rolled: ${currentDiceRoll}`);
-    // After rolling, the game should typically disable the roll button until the turn is fully processed.
-    rollDiceBtn.disabled = true; 
+    // Instead of instantly updating UI, emit to server, let server broadcast back.
+    const roomId = document.getElementById('game-container').dataset.roomId;
+    if (roomId && socket) { // Ensure socket is defined
+        socket.emit('diceRolled', { roomId: roomId, playerId: socket.id /* Send who rolled */ });
+        // Disable button immediately after emitting to prevent multiple clicks before server response
+        rollDiceBtn.disabled = true; 
+    } else {
+        console.error("No roomId found or socket not initialized to emit dice roll.");
+        // Fallback for local roll if needed, or handle error
+        // For multiplayer, roomId should exist if game has started.
+        // If socket is not defined here, it indicates a larger issue with initialization order.
+    }
+    // The actual dice roll display and game logic update will now be handled by 'diceBroadcast' listener
+});
 
-    if (rolledSix) {
+// Note: The original logic for setting gameMessage.textContent immediately after local roll is removed.
+// It will now be set based on the 'diceBroadcast' from the server.
+// The `currentDiceRoll` and `rolledSix` variables will also be set by 'diceBroadcast'.
+
+// Existing:
+// if (rolledSix) {
+// ...
+// } else {
+// ...
+// }
+// This above block for local message update is removed as server broadcast will handle it.
+
+function switchToNextPlayer() {
         // Player rolled a 6, gets another turn to roll.
         // They must move a token first if possible, then roll again.
         gameMessage.textContent = "Rolled a 6! Move your token, then roll again.";
@@ -273,7 +323,244 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!gameMessage) console.error("Error: gameMessage element not found after DOMContentLoaded.");
     if (!playerTurnIndicator) console.error("Error: playerTurnIndicator element not found after DOMContentLoaded.");
 
+    // Multiplayer connection attempt
+    currentRoomIdDisplay = document.getElementById('current-room-id-display');
+    roomIdInput = document.getElementById('room-id-input');
+    joinRoomBtn = document.getElementById('join-room-btn');
+    createRoomBtn = document.getElementById('create-room-btn');
+    playerListDisplay = document.getElementById('player-list-display');
+
+    // Event Listeners for new buttons
+    if (createRoomBtn) {
+        createRoomBtn.addEventListener('click', () => {
+            socket.emit('createRoom');
+            createRoomBtn.disabled = true;
+            joinRoomBtn.disabled = true;
+            roomIdInput.disabled = true;
+        });
+    }
+
+    if (joinRoomBtn) {
+        joinRoomBtn.addEventListener('click', () => {
+            const roomId = roomIdInput.value.trim().toUpperCase();
+            if (roomId) {
+                socket.emit('joinRoom', roomId);
+                createRoomBtn.disabled = true;
+                joinRoomBtn.disabled = true;
+                roomIdInput.disabled = true;
+            } else {
+                alert("Please enter a Room ID.");
+            }
+        });
+    }
+    
+    try {
+        const socket = io('http://localhost:3000'); // Attempt to connect to the server
+
+        socket.on('connect', () => {
+            console.log('Connected to multiplayer server with ID:', socket.id);
+            gameMessage.textContent = 'Connected to server! Create or Join a Room.'; 
+            resetRoomButtons(); // Enable buttons on successful connection
+        });
+
+        socket.on('welcome_message', (data) => {
+            console.log('Message from server:', data.message);
+            const serverMsgDiv = document.createElement('div');
+            serverMsgDiv.textContent = `Server: ${data.message} (My ID: ${socket.id})`;
+            const uiPanel = document.getElementById('ui-panel');
+            if (uiPanel) {
+                uiPanel.prepend(serverMsgDiv);
+            }
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error('Connection to server failed:', err.message);
+            gameMessage.textContent = 'Failed to connect to server.';
+            // Disable room buttons if connection fails initially
+            if(createRoomBtn) createRoomBtn.disabled = true;
+            if(joinRoomBtn) joinRoomBtn.disabled = true;
+            if(roomIdInput) roomIdInput.disabled = true;
+        });
+
+        socket.on('roomCreated', (data) => {
+            console.log('Room created:', data);
+            if(gameMessage) gameMessage.textContent = `Room ${data.roomId} created. Waiting for players...`;
+            if(currentRoomIdDisplay) currentRoomIdDisplay.textContent = data.roomId;
+            const gameContainer = document.getElementById('game-container');
+            if(gameContainer) gameContainer.dataset.roomId = data.roomId;
+            updatePlayerListUI(data.players);
+            // Buttons remain disabled as we are now in a 'waiting' state in a room
+        });
+
+        socket.on('joinedRoom', (data) => {
+            console.log('Joined room:', data);
+            if(gameMessage) gameMessage.textContent = `Joined room ${data.roomId}. Players: ${data.players.length}/${data.roomCapacity}`;
+            if(currentRoomIdDisplay) currentRoomIdDisplay.textContent = data.roomId;
+            const gameContainer = document.getElementById('game-container');
+            if(gameContainer) gameContainer.dataset.roomId = data.roomId;
+            updatePlayerListUI(data.players);
+            if(createRoomBtn) createRoomBtn.disabled = true;
+            if(joinRoomBtn) joinRoomBtn.disabled = true;
+            if(roomIdInput) roomIdInput.disabled = true;
+        });
+        
+        socket.on('playerJoined', (data) => { 
+            console.log('Another player joined:', data);
+            if(gameMessage) gameMessage.textContent = `${data.player.name} joined. Players: ${data.playersInRoom.length}`;
+            updatePlayerListUI(data.playersInRoom);
+        });
+
+        socket.on('playerLeft', (data) => { 
+            console.log('A player left:', data);
+            if(gameMessage) gameMessage.textContent = `${data.name} left. Players: ${data.playersInRoom.length}`;
+            updatePlayerListUI(data.playersInRoom);
+            if (data.playersInRoom.length < MIN_PLAYERS_TO_START && !isGameOver) { 
+                 if(gameMessage) gameMessage.textContent += " Waiting for more players...";
+                 if(rollDiceBtn) rollDiceBtn.disabled = true;
+            }
+        });
+        
+        socket.on('roomNotFound', (data) => {
+            alert(`Error: ${data.message}`);
+            resetRoomButtons();
+        });
+        socket.on('roomFull', (data) => {
+            alert(`Error: ${data.message}`);
+            resetRoomButtons();
+        });
+        socket.on('gameAlreadyStarted', (data) => {
+            alert(`Error: ${data.message}`);
+            resetRoomButtons(); 
+        });
+
+        socket.on('gameStart', (data) => {
+            console.log('Game starting!', data);
+            gameMessage.textContent = `Game Start! Room: ${data.roomId}. Starting: ${data.startingPlayerColor}`;
+            activePlayers = data.players.map(p => p.color); 
+            currentPlayerId = data.startingPlayerColor;
+            currentPlayerIndex = activePlayers.indexOf(currentPlayerId);
+            isGameOver = false; 
+            updatePlayerTurnIndicator(); 
+            if(rollDiceBtn) rollDiceBtn.disabled = (socket.id !== data.startingPlayerId); 
+            initializeTokenPositions(); 
+            
+            // Update player list in the room management panel
+            if(playerListDisplay) playerListDisplay.innerHTML = ''; // Clear old list
+            data.players.forEach(p => { 
+                const pDiv = document.createElement('div');
+                const playerColor = p.color ? p.color.toLowerCase() : 'black';
+                pDiv.innerHTML = `${p.name} <span style="color:${playerColor}; font-weight:bold;">(${p.color || 'N/A'})</span> ${p.id === socket.id ? '(You)' : ''}`;
+                if(playerListDisplay) playerListDisplay.appendChild(pDiv);
+            });
+            
+            const localPlayer = data.players.find(p=>p.id === socket.id);
+            if (localPlayer && localPlayer.color && data.startingPlayerColor) {
+                 alert(`Game is starting! You are ${localPlayer.color}. Starting player: ${data.startingPlayerColor}`);
+            } else {
+                 alert(`Game is starting! Starting player: ${data.startingPlayerColor}`); 
+            }
+        });
+
+        socket.on('diceBroadcast', (data) => {
+            console.log('Dice roll broadcast received:', data);
+            
+            currentDiceRoll = data.diceValue;
+            rolledSix = (currentDiceRoll === 6);
+
+            if (diceDisplay) { // Ensure diceDisplay is available
+                diceDisplay.textContent = currentDiceRoll;
+                diceDisplay.style.transform = 'rotate(360deg)';
+                setTimeout(() => { diceDisplay.style.transform = 'none'; }, 200);
+            } else {
+                console.error("diceDisplay element not found for diceBroadcast.");
+            }
+
+            const rollerName = data.rollerName || (data.rollerId ? data.rollerId.substring(0,3) : 'Unknown Player');
+            const playerDisplayName = (socket && data.rollerId === socket.id) ? "You" : rollerName;
+
+            if (gameMessage) { // Ensure gameMessage is available
+                if (rolledSix) {
+                    gameMessage.textContent = `${playerDisplayName} rolled a 6! Select a token to move or activate.`;
+                     // Server will handle if another roll is granted post-move. Client just enables UI for this move.
+                } else {
+                    gameMessage.textContent = `${playerDisplayName} rolled a ${currentDiceRoll}. Select a token to move.`;
+                }
+            } else {
+                console.error("gameMessage element not found for diceBroadcast.");
+            }
+
+            // If this client is the one who rolled, their rollDiceBtn is already disabled.
+            // Token clickability is primarily handled by `handleTokenClick` checking `currentPlayerId`.
+            // `currentPlayerId` (color) should align with `data.rollerColor` if the game logic is correct.
+            // The server's broadcast implies it's this player's (rollerColor's) turn to act on the roll.
+            // No specific client-side change to `rollDiceBtn.disabled` here, as it's managed by turn flow.
+        });
+
+        socket.on('playerMoveBroadcasted', (data) => {
+            console.log('Player move broadcast received:', data);
+
+            const { movedTokenId, newCellId, isActivationMove, captureData, rollerId, wasSixRoll } = data;
+            
+            const tokenToMove = document.getElementById(movedTokenId);
+            const targetCell = document.getElementById(newCellId);
+            if (tokenToMove && targetCell) {
+                targetCell.appendChild(tokenToMove);
+                tokenPositions[movedTokenId] = newCellId;
+            } else {
+                console.error("Moved token or target cell not found on client board:", movedTokenId, newCellId);
+            }
+
+            if (captureData) {
+                const capturedToken = document.getElementById(captureData.id);
+                const homeCellForCaptured = document.getElementById(captureData.homeCellId);
+                if (capturedToken && homeCellForCaptured) {
+                    homeCellForCaptured.appendChild(capturedToken);
+                    tokenPositions[captureData.id] = captureData.homeCellId;
+                    gameMessage.textContent = `Player ${getTokenColor(movedTokenId)} captured ${getTokenColor(captureData.id)}'s token!`;
+                } else {
+                    console.error("Captured token or its home cell not found:", captureData);
+                }
+            } else {
+                 if(gameMessage) gameMessage.textContent = `Player ${getTokenColor(movedTokenId)} moved token ${movedTokenId.split('-')[1]}.`;
+            }
+
+            if (socket.id === rollerId) { 
+                if (wasSixRoll || isActivationMove) { 
+                    if(gameMessage) gameMessage.textContent += " You get another roll!";
+                    if(rollDiceBtn) rollDiceBtn.disabled = false; 
+                }
+            } else { 
+                if (wasSixRoll || isActivationMove) {
+                     if(gameMessage) gameMessage.textContent += ` ${getTokenColor(rollerId)} gets another roll.`;
+                }
+            }
+            currentDiceRoll = 0; 
+        });
+
+    } catch (e) {
+        console.error("Socket.IO client not loaded or error initializing:", e);
+        if(gameMessage) gameMessage.textContent = 'Error setting up server connection.';
+    }
 });
+
+// Helper function to update player list UI
+function updatePlayerListUI(players) {
+    if (!playerListDisplay) return; // Guard against playerListDisplay not being initialized
+    playerListDisplay.innerHTML = ''; // Clear existing list
+    if (!players) return;
+    players.forEach(p => {
+        const pDiv = document.createElement('div');
+        const playerColor = p.color ? p.color.toLowerCase() : 'black';
+        pDiv.innerHTML = `${p.name} <span style="color:${playerColor}; font-weight:bold;">(${p.color || 'N/A'})</span> ${p.id === socket.id ? '(You)' : ''}`;
+        playerListDisplay.appendChild(pDiv);
+    });
+}
+
+function resetRoomButtons() {
+    if(createRoomBtn) createRoomBtn.disabled = false;
+    if(joinRoomBtn) joinRoomBtn.disabled = false;
+    if(roomIdInput) roomIdInput.disabled = false;
+}
 
 function initializeTokenPositions() {
     const tokens = document.querySelectorAll('.token');
@@ -302,6 +589,8 @@ function getTokenColor(tokenId) {
 }
 
 function handleTokenClick(tokenElement) {
+    if (isGameOver) return; // Prevent action if game is over
+
     const tokenId = tokenElement.id;
     const tokenColor = getTokenColor(tokenId);
 
@@ -421,27 +710,53 @@ function handleActiveTokenMove(tokenElement) {
     newCellElement.appendChild(tokenElement);
     tokenPositions[tokenId] = newCellId; // Update position for the moved token
 
-    // Post-move actions
-    if (captureOccurred) {
-        gameMessage.textContent = `Token ${tokenId} captured opponent at ${newCellId}!`;
-    } else {
-        gameMessage.textContent = `Token ${tokenId} moved to ${newCellId}.`;
+    // Check for win condition - This should ideally be checked *after* server confirms the move
+    // For now, we'll leave it here, but it's better on server or after 'playerMoveBroadcasted'
+    if (checkWinCondition(currentPlayerId)) {
+        isGameOver = true;
+        gameMessage.textContent = `GAME OVER! Player ${currentPlayerId} WINS!`;
+        rollDiceBtn.disabled = true; 
+        console.log(`Game Over. Player ${currentPlayerId} has won!`);
+        return; // Stop further processing, even emitting if game is won locally.
     }
-    
-    const diceRolledWasSix = rolledSix; // Store before resetting currentDiceRoll
-    
-    currentDiceRoll = 0; // Dice roll has been used
 
-    if (diceRolledWasSix) {
-        // If a capture occurred on a 6-roll, the player still gets to roll again.
-        gameMessage.textContent += (captureOccurred ? " " : "") + "You rolled a 6, roll again!";
-        rolledSix = false; 
-        rollDiceBtn.disabled = false; 
+    // Client-side checks passed. Now prepare to emit.
+    const roomId = document.getElementById('game-container').dataset.roomId;
+    if (roomId && socket) { // Ensure socket is defined
+        let capturedTokenInfo = null;
+        // const potentialNewCellElement = document.getElementById(newCellId); // Not needed here as we don't modify DOM
+        const isSafe = FINAL_SAFE_CELLS.includes(newCellId);
+
+        if (!isSafe) { // Client-side check for potential capture to send to server
+            const newCellElement = document.getElementById(newCellId); // Need to check children of newCellElement
+            if (newCellElement) { // Ensure the new cell element exists
+                const tokensOnNewCell = Array.from(newCellElement.children).filter(child => child.classList.contains('token'));
+                for (const tokenOnCell of tokensOnNewCell) {
+                    if (getTokenColor(tokenOnCell.id) !== currentPlayerId) { 
+                        capturedTokenInfo = { id: tokenOnCell.id, homeCellId: tokenInitialHomeCells[tokenOnCell.id] };
+                        break; 
+                    }
+                }
+            }
+        }
+
+        socket.emit('tokenMoved', {
+            roomId: roomId,
+            playerId: socket.id,
+            tokenId: tokenId,
+            currentCellId: currentCellId, // For server validation/logging
+            targetCellId: newCellId,
+            isActivation: false,
+            diceValueUsed: currentDiceRoll,
+            capturedTokenInfo: capturedTokenInfo
+        });
+        // UI update will happen upon server broadcast ('playerMoveBroadcasted').
+        // rollDiceBtn is already disabled. It will be handled by broadcast.
     } else {
-        // Standard move, switch to next player
-        // If a capture occurred on a non-6-roll, the turn still switches.
-        switchToNextPlayer();
+        console.error("No roomId or socket to emit tokenMoved for active move.");
     }
+    // The local DOM manipulation, tokenPositions update, and post-move logic (switchToNextPlayer, etc.)
+    // are removed from here. They will be handled by the 'playerMoveBroadcasted' listener.
 }
 
 function activateTokenFromHome(tokenElement) {
@@ -476,19 +791,23 @@ function activateTokenFromHome(tokenElement) {
          return;
     }
 
-    // Move token
-    const entryCellElement = document.getElementById(entryCellId);
-    if (entryCellElement) {
-        // Append token to the new cell
-        entryCellElement.appendChild(tokenElement);
-        tokenPositions[tokenId] = entryCellId; // Update token's current position
-
-        gameMessage.textContent = `Token ${tokenId} moved to start! Roll again.`;
-        currentDiceRoll = 0; // Mark 6 as used for activation
-        // rolledSix flag is true (because currentDiceRoll was 6), so turn doesn't switch yet.
-        rollDiceBtn.disabled = false; // Allow current player to roll again.
-        
+    // If those checks pass:
+    
+    const roomId = document.getElementById('game-container').dataset.roomId;
+    if (roomId && socket) { // Ensure socket is defined
+        // Send move to server for validation and broadcast
+        socket.emit('tokenMoved', {
+            roomId: roomId,
+            playerId: socket.id, // Identifies who made the move
+            tokenId: tokenId,
+            targetCellId: entryCellId,
+            isActivation: true,
+            diceValueUsed: 6, // The 6 that was rolled
+            // No capture on activation from home as entry cells are safe
+        });
+        // UI update will happen upon server broadcast ('playerMoveBroadcasted')
+        // rollDiceBtn is already disabled. It will be re-enabled for this player by the broadcast handler.
     } else {
-        console.error(`Entry cell ${entryCellId} not found!`);
+        console.error("No roomId or socket to emit tokenMoved for activation.");
     }
 }
